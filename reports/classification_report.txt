@@ -1,0 +1,21 @@
+MODEL: Random Forest (Tuned)
+============================================================
+              precision    recall  f1-score   support
+
+      Cloudy     0.8823    0.9197    0.9006       660
+       Rainy     0.9004    0.9182    0.9092       660
+       Snowy     0.9587    0.9136    0.9356       660
+       Sunny     0.9323    0.9182    0.9252       660
+
+    accuracy                         0.9174      2640
+   macro avg     0.9184    0.9174    0.9177      2640
+weighted avg     0.9184    0.9174    0.9177      2640
+
+
+Model Comparison Matrix:
+                    Model  Accuracy  Precision (Macro)  Recall (Macro)  F1-Score (Macro)  F1-Score (Weighted)  ROC-AUC (OvR)  CV Accuracy (Mean)  CV Accuracy (Std)
+0           Random Forest    0.9178             0.9189          0.9178            0.9181               0.9181         0.9940              0.9143             0.0035
+1       Gradient Boosting    0.9155             0.9163          0.9155            0.9157               0.9157         0.9939              0.9151             0.0050
+2           Decision Tree    0.9102             0.9117          0.9102            0.9105               0.9105         0.9694              0.9081             0.0038
+3  Support Vector Machine    0.9098             0.9118          0.9098            0.9103               0.9103         0.9898              0.9102             0.0036
+4     Logistic Regression    0.8746             0.8760          0.8746            0.8750               0.8750         0.9638              0.8779             0.0043

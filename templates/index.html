@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyCast AI • Weather Type Predictor & Decision Support</title>
+  <meta name="description" content="Machine learning powered real-time meteorological classification and operational decision-support system.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --bg-card: rgba(18, 25, 39, 0.75);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #00d2ff;
+      --accent-blue: #3a7bd5;
+      --accent-purple: #9b51e0;
+      --accent-amber: #f2994a;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      
+      --sunny-color: #f59e0b;
+      --cloudy-color: #64748b;
+      --rainy-color: #0284c7;
+      --snowy-color: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 15% 15%, rgba(0, 210, 255, 0.08), transparent 40%),
+                  radial-gradient(circle at 85% 85%, rgba(155, 81, 224, 0.08), transparent 40%),
+                  var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    header {
+      padding: 2rem 2rem 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+    }
+
+    .logo-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-subtitle {
+      font-size: 0.8rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 10px;
+    }
+
+    .pill-badge {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-badge.active {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 1.8rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Preset Scenarios */
+    .presets-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 1.8rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-btn:hover {
+      background: rgba(0, 210, 255, 0.12);
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    /* Form Controls */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
+    }
+
+    @media (max-width: 640px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .val-display {
+      color: var(--accent-cyan);
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+      margin-top: 4px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      transition: transform 0.15s ease;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    select {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Prediction Result Card */
+    .prediction-hero {
+      text-align: center;
+      padding: 1.8rem 1.2rem;
+      border-radius: 18px;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+
+    .weather-icon-large {
+      font-size: 4rem;
+      margin-bottom: 0.3rem;
+      filter: drop-shadow(0 4px 15px rgba(0,0,0,0.4));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .predicted-weather-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .prediction-confidence {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Probability Bars */
+    .prob-container {
+      margin-bottom: 1.8rem;
+    }
+
+    .prob-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .prob-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .prob-label {
+      width: 75px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .prob-bar-wrapper {
+      flex: 1;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .prob-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .prob-val {
+      width: 50px;
+      text-align: right;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* Decision Support Grid */
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .decision-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: transform 0.2s;
+    }
+
+    .decision-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(4px);
+    }
+
+    .decision-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+
+    .decision-card-text {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    /* Visual Reports Section */
+    .reports-section {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .figures-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-card);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--accent-blue);
+      color: #fff;
+      border-color: var(--accent-cyan);
+    }
+
+    .fig-viewer-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .fig-viewer-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo-area">
+      <div class="logo-badge">⚡</div>
+      <div>
+        <div class="logo-title">SkyCast AI</div>
+        <div class="logo-subtitle">Machine Learning Weather Prediction Engine</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <div class="pill-badge active">
+        <span class="status-dot"></span>
+        Model: Random Forest (91.8% F1)
+      </div>
+      <div class="pill-badge">
+        Dataset: 13,200 records
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Grid -->
+  <main class="container">
+    
+    <!-- Left Column: Interactive Inputs -->
+    <section class="card">
+      <div class="card-title">
+        <span>Meteorological Parameters</span>
+        <span style="font-size: 0.8rem; font-weight: 500; color: var(--accent-cyan);">Live Model Inference</span>
+      </div>
+      <div class="card-desc">Adjust the real-time weather features or choose a preset scenario to evaluate predictions and decisions.</div>
+
+      <!-- Presets -->
+      <div class="presets-bar">
+        <button class="preset-btn" onclick="applyPreset('blizzard')">❄️ Mountain Blizzard</button>
+        <button class="preset-btn" onclick="applyPreset('beach')">☀️ Coastal Summer</button>
+        <button class="preset-btn" onclick="applyPreset('monsoon')">🌧️ Monsoon Rain</button>
+        <button class="preset-btn" onclick="applyPreset('overcast')">☁️ Autumn Overcast</button>
+      </div>
+
+      <!-- Sliders and Inputs -->
+      <div class="controls-grid">
+        
+        <div class="control-group">
+          <div class="control-header">
+            <span>Temperature</span>
+            <span class="val-display" id="val-temp">22°C</span>
+          </div>
+          <input type="range" id="input-temp" min="-25" max="50" step="0.5" value="22" oninput="updateVal('temp', '°C'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Relative Humidity</span>
+            <span class="val-display" id="val-humidity">65%</span>
+          </div>
+          <input type="range" id="input-humidity" min="10" max="100" step="1" value="65" oninput="updateVal('humidity', '%'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Precipitation Chance</span>
+            <span class="val-display" id="val-precip">30%</span>
+          </div>
+          <input type="range" id="input-precip" min="0" max="100" step="1" value="30" oninput="updateVal('precip', '%'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Wind Speed</span>
+            <span class="val-display" id="val-wind">12 km/h</span>
+          </div>
+          <input type="range" id="input-wind" min="0" max="50" step="0.5" value="12" oninput="updateVal('wind', ' km/h'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Atmospheric Pressure</span>
+            <span class="val-display" id="val-pressure">1013 hPa</span>
+          </div>
+          <input type="range" id="input-pressure" min="950" max="1050" step="1" value="1013" oninput="updateVal('pressure', ' hPa'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>UV Index</span>
+            <span class="val-display" id="val-uv">4</span>
+          </div>
+          <input type="range" id="input-uv" min="0" max="14" step="1" value="4" oninput="updateVal('uv', ''); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Visibility</span>
+            <span class="val-display" id="val-vis">8.0 km</span>
+          </div>
+          <input type="range" id="input-vis" min="0.5" max="20" step="0.5" value="8" oninput="updateVal('vis', ' km'); schedulePredict();">
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Cloud Cover</span>
+          </div>
+          <select id="input-cloud" onchange="schedulePredict();">
+            <option value="clear">Clear Sky</option>
+            <option value="partly cloudy" selected>Partly Cloudy</option>
+            <option value="cloudy">Cloudy</option>
+            <option value="overcast">Overcast</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Season</span>
+          </div>
+          <select id="input-season" onchange="schedulePredict();">
+            <option value="Spring" selected>Spring</option>
+            <option value="Summer">Summer</option>
+            <option value="Autumn">Autumn</option>
+            <option value="Winter">Winter</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <span>Location Zone</span>
+          </div>
+          <select id="input-location" onchange="schedulePredict();">
+            <option value="inland" selected>Inland</option>
+            <option value="coastal">Coastal</option>
+            <option value="mountain">Mountain</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Right Column: Live Model Output & Decision Guidance -->
+    <section class="card">
+      <div class="card-title">
+        <span>Predicted Weather Category</span>
+        <span id="model-badge" style="font-size: 0.75rem; background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px;">Tuned Random Forest</span>
+      </div>
+      
+      <!-- Prediction Hero -->
+      <div class="prediction-hero" id="prediction-hero">
+        <div class="weather-icon-large" id="hero-icon">⛅</div>
+        <div class="predicted-weather-name" id="hero-name">CLOUDY</div>
+        <div class="prediction-confidence" id="hero-conf">Confidence: 94.2%</div>
+      </div>
+
+      <!-- Probability Distribution Bars -->
+      <div class="prob-container">
+        <div class="prob-title">Class Probability Distribution</div>
+        
+        <div class="prob-row">
+          <div class="prob-label"><span>☀️</span> Sunny</div>
+          <div class="prob-bar-wrapper">
+            <div class="prob-bar-fill" id="bar-sunny" style="background: var(--sunny-color);"></div>
+          </div>
+          <div class="prob-val" id="val-sunny">0.0%</div>
+        </div>
+
+        <div class="prob-row">
+          <div class="prob-label"><span>☁️</span> Cloudy</div>
+          <div class="prob-bar-wrapper">
+            <div class="prob-bar-fill" id="bar-cloudy" style="background: var(--cloudy-color);"></div>
+          </div>
+          <div class="prob-val" id="val-cloudy">0.0%</div>
+        </div>
+
+        <div class="prob-row">
+          <div class="prob-label"><span>🌧️</span> Rainy</div>
+          <div class="prob-bar-wrapper">
+            <div class="prob-bar-fill" id="bar-rainy" style="background: var(--rainy-color);"></div>
+          </div>
+          <div class="prob-val" id="val-rainy">0.0%</div>
+        </div>
+
+        <div class="prob-row">
+          <div class="prob-label"><span>❄️</span> Snowy</div>
+          <div class="prob-bar-wrapper">
+            <div class="prob-bar-fill" id="bar-snowy" style="background: var(--snowy-color);"></div>
+          </div>
+          <div class="prob-val" id="val-snowy">0.0%</div>
+        </div>
+      </div>
+
+      <!-- Operational Decision Support -->
+      <div>
+        <div class="prob-title">Practical Operational Decision Support</div>
+        <div class="decision-grid" id="decision-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Visual Reports Gallery -->
+  <section class="reports-section">
+    <div class="card">
+      <div class="card-title">
+        <span>Exploratory Data Analysis & Machine Learning Diagnostic Charts</span>
+      </div>
+      <div class="card-desc">Review publication-ready analysis figures generated during dataset exploration and model evaluation.</div>
+      
+      <div class="figures-tabs">
+        <button class="tab-btn active" onclick="loadFig('06_model_comparison.png', this)">Model Benchmark</button>
+        <button class="tab-btn" onclick="loadFig('07_confusion_matrix_best_model.png', this)">Confusion Matrix</button>
+        <button class="tab-btn" onclick="loadFig('08_multiclass_roc_best_model.png', this)">Multiclass ROC Curves</button>
+        <button class="tab-btn" onclick="loadFig('09_feature_importances.png', this)">Feature Importances</button>
+        <button class="tab-btn" onclick="loadFig('01_class_distribution.png', this)">Target Distribution</button>
+        <button class="tab-btn" onclick="loadFig('03_boxplots_by_weather.png', this)">Feature Boxplots</button>
+        <button class="tab-btn" onclick="loadFig('04_correlation_heatmap.png', this)">Correlation Heatmap</button>
+      </div>
+
+      <div class="fig-viewer-card">
+        <img id="fig-img" src="/reports/figures/06_model_comparison.png" alt="Model Evaluation Figure">
+      </div>
+    </div>
+  </section>
+
+  <script>
+    let debounceTimer = null;
+
+    const weatherThemes = {
+      'Sunny': { icon: '☀️', bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.1))', border: '#f59e0b' },
+      'Cloudy': { icon: '☁️', bg: 'linear-gradient(135deg, rgba(100, 116, 139, 0.25), rgba(71, 85, 105, 0.1))', border: '#64748b' },
+      'Rainy': { icon: '🌧️', bg: 'linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(3, 105, 161, 0.1))', border: '#0284c7' },
+      'Snowy': { icon: '❄️', bg: 'linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(109, 40, 217, 0.1))', border: '#8b5cf6' }
+    };
+
+    function updateVal(key, unit) {
+      const input = document.getElementById(`input-${key}`);
+      document.getElementById(`val-${key}`).innerText = input.value + unit;
+    }
+
+    function schedulePredict() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchPrediction, 120);
+    }
+
+    async function fetchPrediction() {
+      const payload = {
+        'Temperature': document.getElementById('input-temp').value,
+        'Humidity': document.getElementById('input-humidity').value,
+        'Wind Speed': document.getElementById('input-wind').value,
+        'Precipitation (%)': document.getElementById('input-precip').value,
+        'Atmospheric Pressure': document.getElementById('input-pressure').value,
+        'UV Index': document.getElementById('input-uv').value,
+        'Visibility (km)': document.getElementById('input-vis').value,
+        'Cloud Cover': document.getElementById('input-cloud').value,
+        'Season': document.getElementById('input-season').value,
+        'Location': document.getElementById('input-location').value
+      };
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.status === 'success') {
+          updateUI(json.data);
+        }
+      } catch (err) {
+        console.error('Prediction failed:', err);
+      }
+    }
+
+    function updateUI(data) {
+      const summary = data.prediction_summary;
+      const weather = summary.predicted_weather;
+      const theme = weatherThemes[weather] || weatherThemes['Cloudy'];
+
+      // Hero
+      const hero = document.getElementById('prediction-hero');
+      hero.style.background = theme.bg;
+      hero.style.borderColor = theme.border;
+      document.getElementById('hero-icon').innerText = theme.icon;
+      document.getElementById('hero-name').innerText = weather;
+      document.getElementById('hero-name').style.color = theme.border;
+      document.getElementById('hero-conf').innerText = `Confidence: ${summary.confidence_score}`;
+
+      // Probabilities
+      const probs = summary.probabilities;
+      ['Sunny', 'Cloudy', 'Rainy', 'Snowy'].forEach(cat => {
+        const pct = ((probs[cat] || 0) * 100).toFixed(1);
+        const lower = cat.toLowerCase();
+        document.getElementById(`bar-${lower}`).style.width = pct + '%';
+        document.getElementById(`val-${lower}`).innerText = pct + '%';
+      });
+
+      // Decision Support Cards
+      const grid = document.getElementById('decision-grid');
+      grid.innerHTML = '';
+      const domainIcons = {
+        'Aviation & Flight Safety': '✈️',
+        'Agriculture & Irrigation': '🌾',
+        'Logistics & Ground Transport': '🚚',
+        'Outdoor Events & Public Advisory': '🎪'
+      };
+
+      for (const [domain, notes] of Object.entries(data.decision_support)) {
+        const card = document.createElement('div');
+        card.className = 'decision-card';
+        const icon = domainIcons[domain] || '📋';
+        card.innerHTML = `
+          <div class="decision-card-header">${icon} ${domain}</div>
+          <div class="decision-card-text">${notes.join('<br>')}</div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function applyPreset(type) {
+      if (type === 'blizzard') {
+        setInputs(-7, 88, 85, 26, 992, 1, 1.8, 'overcast', 'Winter', 'mountain');
+      } else if (type === 'beach') {
+        setInputs(36, 40, 5, 8, 1014, 11, 10, 'clear', 'Summer', 'coastal');
+      } else if (type === 'monsoon') {
+        setInputs(19, 96, 94, 20, 990, 2, 2.5, 'overcast', 'Autumn', 'inland');
+      } else if (type === 'overcast') {
+        setInputs(15, 78, 15, 11, 1010, 3, 7.5, 'cloudy', 'Spring', 'inland');
+      }
+      fetchPrediction();
+    }
+
+    function setInputs(temp, hum, precip, wind, press, uv, vis, cloud, season, loc) {
+      document.getElementById('input-temp').value = temp;
+      document.getElementById('input-humidity').value = hum;
+      document.getElementById('input-precip').value = precip;
+      document.getElementById('input-wind').value = wind;
+      document.getElementById('input-pressure').value = press;
+      document.getElementById('input-uv').value = uv;
+      document.getElementById('input-vis').value = vis;
+      document.getElementById('input-cloud').value = cloud;
+      document.getElementById('input-season').value = season;
+      document.getElementById('input-location').value = loc;
+
+      updateVal('temp', '°C');
+      updateVal('humidity', '%');
+      updateVal('precip', '%');
+      updateVal('wind', ' km/h');
+      updateVal('pressure', ' hPa');
+      updateVal('uv', '');
+      updateVal('vis', ' km');
+    }
+
+    function loadFig(filename, btn) {
+      document.getElementById('fig-img').src = `/reports/figures/${filename}`;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // Initial predict on load
+    window.onload = () => {
+      fetchPrediction();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Model,Accuracy,Precision (Macro),Recall (Macro),F1-Score (Macro),F1-Score (Weighted),ROC-AUC (OvR),CV Accuracy (Mean),CV Accuracy (Std)
+Random Forest,0.9178,0.9189,0.9178,0.9181,0.9181,0.994,0.9143,0.0035
+Gradient Boosting,0.9155,0.9163,0.9155,0.9157,0.9157,0.9939,0.9151,0.005
+Decision Tree,0.9102,0.9117,0.9102,0.9105,0.9105,0.9694,0.9081,0.0038
+Support Vector Machine,0.9098,0.9118,0.9098,0.9103,0.9103,0.9898,0.9102,0.0036
+Logistic Regression,0.8746,0.876,0.8746,0.875,0.875,0.9638,0.8779,0.0043

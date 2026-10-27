@@ -1,0 +1,60 @@
+================================================================================
+WEATHER TYPE DATASET - STATISTICAL SUMMARY
+================================================================================
+
+Total Observations: 13,200
+Total Features:     11
+
+--- Missing Values ---
+Temperature             0
+Humidity                0
+Wind Speed              0
+Precipitation (%)       0
+Cloud Cover             0
+Atmospheric Pressure    0
+UV Index                0
+Season                  0
+Visibility (km)         0
+Location                0
+Weather Type            0
+
+--- Target Distribution ('Weather Type') ---
+              Count  Percentage (%)
+Weather Type                       
+Rainy          3300            25.0
+Cloudy         3300            25.0
+Sunny          3300            25.0
+Snowy          3300            25.0
+
+--- Numerical Features Summary ---
+       Temperature  Humidity  Wind Speed  Precipitation (%)  Atmospheric Pressure  UV Index  Visibility (km)
+count     13200.00  13200.00    13200.00           13200.00              13200.00  13200.00         13200.00
+mean         19.13     68.71        9.83              53.64               1005.83      4.01             5.46
+std          17.39     20.19        6.91              31.95                 37.20      3.86             3.37
+min         -25.00     20.00        0.00               0.00                800.12      0.00             0.00
+25%           4.00     57.00        5.00              19.00                994.80      1.00             3.00
+50%          21.00     70.00        9.00              58.00               1007.65      3.00             5.00
+75%          31.00     84.00       13.50              82.00               1016.77      7.00             7.50
+max         109.00    109.00       48.50             109.00               1199.21     14.00            20.00
+
+--- Categorical Features Unique Values ---
+
+Feature [Cloud Cover]:
+Cloud Cover
+overcast         6090
+partly cloudy    4560
+clear            2139
+cloudy            411
+
+Feature [Season]:
+Season
+Winter    5610
+Spring    2598
+Autumn    2500
+Summer    2492
+
+Feature [Location]:
+Location
+inland      4816
+mountain    4813
+coastal     3571
