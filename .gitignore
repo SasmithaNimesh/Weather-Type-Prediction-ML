@@ -13,6 +13,9 @@ env/
 venv/
 ENV/
 
+# Machine Learning Model Binaries (regenerate via python main.py)
+models/*.joblib
+
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
